@@ -9,16 +9,24 @@ const upload = multer({ storage });
  * @route   POST /api/memories
  * @desc    Create a new memory
  */
-router.post("/",upload.single("image"), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { title, note , date } = req.body;
-    
+    const { title, note, date } = req.body;
+
+    let imageUrl = "";
+
+    if (req.file) {
+      const base64 = req.file.buffer.toString("base64");
+      imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+    }
+
     const memory = new Memory({
       title,
       note,
       date,
-      imageUrl: ""
+      imageUrl,
     });
+
     const savedMemory = await memory.save();
     res.status(201).json(savedMemory);
   } catch (error) {
