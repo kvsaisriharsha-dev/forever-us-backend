@@ -46,5 +46,22 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+/**
+ * @route   DELETE /api/memories/:id
+ * @desc    Delete a memory
+ */
+router.delete("/:id", async (req, res) => {
+  try {
+    const deleted = await Memory.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Memory not found" });
+    }
+
+    res.json({ message: "Memory deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;
