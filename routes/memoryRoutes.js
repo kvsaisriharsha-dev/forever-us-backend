@@ -1,15 +1,24 @@
 import express from "express";
 import Memory from "../models/Memory.js";
+import multer from "multer";
 
 const router = express.Router();
-
+const storage=multer.memoryStorage();
+const upload = multer({ storage });
 /**
  * @route   POST /api/memories
  * @desc    Create a new memory
  */
-router.post("/", async (req, res) => {
+router.post("/",upload.single("image"), async (req, res) => {
   try {
-    const memory = new Memory(req.body);
+    const { title, note , date } = req.body;
+    
+    const memory = new Memory({
+      title,
+      note,
+      date,
+      imageUrl: ""
+    });
     const savedMemory = await memory.save();
     res.status(201).json(savedMemory);
   } catch (error) {
