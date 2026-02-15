@@ -1,70 +1,39 @@
 import express from "express";
 import Memory from "../models/Memory.js";
 import multer from "multer";
+import { analyzeMemory } from "../utils/aiHelper.js";
 
 const router = express.Router();
 
-//  multer setup
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-/**
- * @route   POST /api/memories
- * @desc    Create a new memory (AI safe version)
- */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { title, note, date } = req.body;
 
-    //  Default values (VERY IMPORTANT)
-    let aiCaption = "";
-    let mood = "neutral";
-    
-    // ===============================
-    // 🤖 AI BLOCK (SAFE — won't crash)
-    // ===============================
+    // 🧠 SAFE AI CALL
+    let aiResult = { caption: "", mood: "neutral" };
+
     try {
-      //  TODO: Your OpenAI call will go here later
-
-      // Example placeholder logic:
-      if (note) {
-        aiCaption = `Memory about: ${note.substring(0, 30)}`;
-        mood = "happy"; // temporary mock
-      }
-
-    } catch (aiError) {
-      console.log("⚠️ AI failed, continuing without it:", aiError.message);
-    }
-    // ===============================
-
-
-    // ===============================
-    //  SAVE MEMORY
-    // ===============================
-    // ===============================
-    // 🖼️ Handle uploaded image
-    // ===============================
-    let imageUrl = "";
-    if (req.file) {
-      const base64 = req.file.buffer.toString("base64");
-      imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+      aiResult = await analyzeMemory(note);
+    } catch (err) {
+      console.log("AI failed — continuing without AI");
     }
 
     const memory = new Memory({
       title,
       note,
       date,
-      imageUrl, 
-      aiCaption,
-      mood
+      imageUrl: "",
+      caption: aiResult.caption,
+      mood: aiResult.mood,
     });
 
     const savedMemory = await memory.save();
-
     res.status(201).json(savedMemory);
-
   } catch (error) {
-    console.error("❌ Memory creation failed:", error);
+    console.error("Memory save error:", error);
     res.status(400).json({ error: error.message });
   }
 });
