@@ -1,6 +1,11 @@
 import express from "express";
 import Memory from "../models/Memory.js";
 import multer from "multer";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 const router = express.Router();
 const storage=multer.memoryStorage();
@@ -13,23 +18,48 @@ router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { title, note, date } = req.body;
 
-    let imageUrl = "";
+    // AI analysis
+    const aiResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You analyze memories. Return ONLY JSON with fields: caption and mood."
+        },
+        {
+          role: "user",
+          content: `Memory title: ${title}\nMemory note: ${note}`
+        }
+      ],
+      temperature: 0.7
+    });
 
-    if (req.file) {
-      const base64 = req.file.buffer.toString("base64");
-      imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+    // parse AI response
+    let aiCaption = "";
+    let mood = "";
+
+    try {
+      const parsed = JSON.parse(aiResponse.choices[0].message.content);
+      aiCaption = parsed.caption;
+      mood = parsed.mood;
+    } catch {
+      aiCaption = "Beautiful memory 💜";
+      mood = "nostalgic";
     }
-
+    // Save memory
     const memory = new Memory({
       title,
       note,
       date,
-      imageUrl,
+      imageUrl: "",
+      aiCaption,
+      mood
     });
-
     const savedMemory = await memory.save();
     res.status(201).json(savedMemory);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 });
