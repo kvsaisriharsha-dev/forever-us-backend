@@ -3,59 +3,62 @@ import Memory from "../models/Memory.js";
 import multer from "multer";
 import OpenAI from "openai";
 
+const router = express.Router();
+
+// ✅ multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// ✅ OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-const router = express.Router();
-const storage=multer.memoryStorage();
-const upload = multer({ storage });
 /**
- * @route   POST /api/memories
- * @desc    Create a new memory
+ * @route POST /api/memories
  */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { title, note, date } = req.body;
 
-    // AI analysis
+    // 🧠 AI caption + mood generation
     const aiResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You analyze memories. Return ONLY JSON with fields: caption and mood."
+            "You are a romantic memory assistant. Generate a short emotional caption and detect mood (happy, romantic, nostalgic, sad, excited). Respond ONLY in JSON: {\"caption\":\"...\",\"mood\":\"...\"}",
         },
         {
           role: "user",
-          content: `Memory title: ${title}\nMemory note: ${note}`
-        }
+          content: `Title: ${title}\nNote: ${note}`,
+        },
       ],
-      temperature: 0.7
+      temperature: 0.7,
     });
 
-    // parse AI response
-    let aiCaption = "";
-    let mood = "";
+    let caption = "";
+    let mood = "neutral";
 
     try {
       const parsed = JSON.parse(aiResponse.choices[0].message.content);
-      aiCaption = parsed.caption;
+      caption = parsed.caption;
       mood = parsed.mood;
     } catch {
-      aiCaption = "Beautiful memory 💜";
-      mood = "nostalgic";
+      console.log("AI parse failed — using fallback");
     }
-    // Save memory
+
+    // ✅ save memory
     const memory = new Memory({
       title,
       note,
       date,
       imageUrl: "",
-      aiCaption,
-      mood
+      caption,
+      mood,
     });
+
     const savedMemory = await memory.save();
     res.status(201).json(savedMemory);
   } catch (error) {
