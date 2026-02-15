@@ -2,6 +2,7 @@ import express from "express";
 import Memory from "../models/Memory.js";
 import multer from "multer";
 import { analyzeMemory } from "../utils/aiHelper.js";
+import cloudinary from "../utils/cloudinary.js";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { title, note, date } = req.body;
 
-    // 🧠 SAFE AI CALL
+    // SAFE AI CALL
     let aiResult = { caption: "", mood: "neutral" };
 
     try {
@@ -21,11 +22,25 @@ router.post("/", upload.single("image"), async (req, res) => {
       console.log("AI failed — continuing without AI");
     }
 
+    // CLOUDINARY UPLOAD (THE MISSING PIECE)
+    let imageUrl = "";
+
+    if (req.file) {
+      const base64 = req.file.buffer.toString("base64");
+      const dataUri = `data:${req.file.mimetype};base64,${base64}`;
+
+      const uploadResult = await cloudinary.uploader.upload(dataUri, {
+        folder: "bestie-memories",
+      });
+
+      imageUrl = uploadResult.secure_url;
+    }
+
     const memory = new Memory({
       title,
       note,
       date,
-      imageUrl: "",
+      imageUrl, 
       caption: aiResult.caption,
       mood: aiResult.mood,
     });
