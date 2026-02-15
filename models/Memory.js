@@ -7,8 +7,8 @@ const memorySchema = new mongoose.Schema(
     date: { type: Date, required: true },
     imageUrl: { type: String },
 
-    aiCaption: { type: String },
-    mood: { type: String }
+    caption: { type: String },
+    mood: { type: String, default: "neutral" },
   },
   { timestamps: true }
 );
