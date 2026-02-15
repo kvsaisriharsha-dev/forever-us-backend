@@ -19,7 +19,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     //  Default values (VERY IMPORTANT)
     let aiCaption = "";
     let mood = "neutral";
-
+    
     // ===============================
     // 🤖 AI BLOCK (SAFE — won't crash)
     // ===============================
@@ -36,24 +36,25 @@ router.post("/", upload.single("image"), async (req, res) => {
       console.log("⚠️ AI failed, continuing without it:", aiError.message);
     }
     // ===============================
-// 🖼️ Handle uploaded image
-// ===============================
-let imageUrl = "";
-
-if (req.file) {
-  const base64 = req.file.buffer.toString("base64");
-  imageUrl = `data:${req.file.mimetype};base64,${base64}`;
-}
 
 
     // ===============================
     //  SAVE MEMORY
     // ===============================
+    // ===============================
+    // 🖼️ Handle uploaded image
+    // ===============================
+    let imageUrl = "";
+    if (req.file) {
+      const base64 = req.file.buffer.toString("base64");
+      imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+    }
+
     const memory = new Memory({
       title,
       note,
       date,
-      imageUrl: "", // we'll enhance later
+      imageUrl, 
       aiCaption,
       mood
     });
