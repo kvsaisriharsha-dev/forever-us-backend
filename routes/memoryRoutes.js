@@ -35,6 +35,16 @@ router.post("/", upload.single("image"), async (req, res) => {
     } catch (aiError) {
       console.log("⚠️ AI failed, continuing without it:", aiError.message);
     }
+    // ===============================
+// 🖼️ Handle uploaded image
+// ===============================
+let imageUrl = "";
+
+if (req.file) {
+  const base64 = req.file.buffer.toString("base64");
+  imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+}
+
 
     // ===============================
     //  SAVE MEMORY
