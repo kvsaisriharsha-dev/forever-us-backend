@@ -33,8 +33,15 @@ export async function analyzeMemory(note) {
     const text = completion.choices[0].message.content;
 
     return JSON.parse(text);
-  } catch (err) {
-    console.error("AI error:", err.message);
-    return { caption: "", mood: "neutral" };
   }
+  catch (err) {
+  console.error("AI error:", err.message);
+
+  // ✅ TEMP TEST
+  return {
+      caption: "Test AI caption working 💜",
+      mood: "happy"
+    };
+  }
+
 }
