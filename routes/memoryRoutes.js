@@ -1,72 +1,62 @@
 import express from "express";
 import Memory from "../models/Memory.js";
 import multer from "multer";
-import OpenAI from "openai";
 
 const router = express.Router();
 
-// ✅ multer
+//  multer setup
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// ✅ OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 /**
- * @route POST /api/memories
+ * @route   POST /api/memories
+ * @desc    Create a new memory (AI safe version)
  */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { title, note, date } = req.body;
 
-    // 🧠 AI caption + mood generation
-    const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a romantic memory assistant. Generate a short emotional caption and detect mood (happy, romantic, nostalgic, sad, excited). Respond ONLY in JSON: {\"caption\":\"...\",\"mood\":\"...\"}",
-        },
-        {
-          role: "user",
-          content: `Title: ${title}\nNote: ${note}`,
-        },
-      ],
-      temperature: 0.7,
-    });
-
-    let caption = "";
+    //  Default values (VERY IMPORTANT)
+    let aiCaption = "";
     let mood = "neutral";
 
+    // ===============================
+    // 🤖 AI BLOCK (SAFE — won't crash)
+    // ===============================
     try {
-      const parsed = JSON.parse(aiResponse.choices[0].message.content);
-      caption = parsed.caption;
-      mood = parsed.mood;
-    } catch {
-      console.log("AI parse failed — using fallback");
+      //  TODO: Your OpenAI call will go here later
+
+      // Example placeholder logic:
+      if (note) {
+        aiCaption = `Memory about: ${note.substring(0, 30)}`;
+        mood = "happy"; // temporary mock
+      }
+
+    } catch (aiError) {
+      console.log("⚠️ AI failed, continuing without it:", aiError.message);
     }
 
-    // ✅ save memory
+    // ===============================
+    //  SAVE MEMORY
+    // ===============================
     const memory = new Memory({
       title,
       note,
       date,
-      imageUrl: "",
-      caption,
-      mood,
+      imageUrl: "", // we'll enhance later
+      aiCaption,
+      mood
     });
 
     const savedMemory = await memory.save();
+
     res.status(201).json(savedMemory);
+
   } catch (error) {
-    console.error(error);
+    console.error("❌ Memory creation failed:", error);
     res.status(400).json({ error: error.message });
   }
 });
-
 /**
  * @route   GET /api/memories
  * @desc    Get all memories
