@@ -11,8 +11,8 @@ const upload = multer({ storage });
 
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { title, note, date } = req.body;
-
+    const { title, note, date, spotifyUrl } = req.body;
+    
     // SAFE AI CALL
     let aiResult = { caption: "", mood: "neutral" };
 
@@ -43,6 +43,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       imageUrl, 
       caption: aiResult.caption,
       mood: aiResult.mood,
+      spotifyUrl,
     });
 
     const savedMemory = await memory.save();
