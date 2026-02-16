@@ -6,9 +6,11 @@ const memorySchema = new mongoose.Schema(
     note: { type: String, required: true },
     date: { type: Date, required: true },
     imageUrl: { type: String },
-
+    
     aiCaption: { type: String },
     mood: { type: String, default: "neutral" }
+
+    spotifyUrl: { type: String },
   },
   { timestamps: true }
 );
