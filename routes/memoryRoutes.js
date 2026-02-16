@@ -40,10 +40,10 @@ router.post("/", upload.single("image"), async (req, res) => {
       title,
       note,
       date,
-      imageUrl, 
+      imageUrl,      
+      spotifyUrl,
       caption: aiResult.caption,
       mood: aiResult.mood,
-      spotifyUrl,
     });
 
     const savedMemory = await memory.save();
