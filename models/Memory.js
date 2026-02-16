@@ -8,7 +8,7 @@ const memorySchema = new mongoose.Schema(
     imageUrl: { type: String },
     
     aiCaption: { type: String },
-    mood: { type: String, default: "neutral" }
+    mood: { type: String, default: "neutral" },
 
     spotifyUrl: { type: String },
   },
