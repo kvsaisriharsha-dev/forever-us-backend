@@ -82,5 +82,25 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+/**
+ * @route   PATCH /api/memories/:id/favorite
+ * @desc    Toggle favorite
+ */
+router.patch("/:id/favorite", async (req, res) => {
+  try {
+    const memory = await Memory.findById(req.params.id);
+
+    if (!memory) {
+      return res.status(404).json({ error: "Memory not found" });
+    }
+
+    memory.isFavorite = !memory.isFavorite;
+    await memory.save();
+
+    res.json(memory);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;
