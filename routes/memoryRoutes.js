@@ -9,11 +9,15 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+/**
+ * @route   POST /api/memories
+ * @desc    Create new memory
+ */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { title, note, date, spotifyUrl } = req.body;
-    
-    // SAFE AI CALL
+
+    // 🧠 SAFE AI CALL
     let aiResult = { caption: "", mood: "neutral" };
 
     try {
@@ -22,7 +26,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       console.log("AI failed — continuing without AI");
     }
 
-    // CLOUDINARY UPLOAD (THE MISSING PIECE)
+    // ☁️ CLOUDINARY UPLOAD
     let imageUrl = "";
 
     if (req.file) {
@@ -40,7 +44,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       title,
       note,
       date,
-      imageUrl,      
+      imageUrl,
       spotifyUrl,
       caption: aiResult.caption,
       mood: aiResult.mood,
@@ -53,6 +57,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
 /**
  * @route   GET /api/memories
  * @desc    Get all memories
@@ -65,6 +70,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 /**
  * @route   DELETE /api/memories/:id
  * @desc    Delete a memory
@@ -82,8 +88,9 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 /**
- * @route   PATCH /api/memories/:id/favorite
+ * ❤️ @route   PATCH /api/memories/:id/favorite
  * @desc    Toggle favorite
  */
 router.patch("/:id/favorite", async (req, res) => {
@@ -99,6 +106,7 @@ router.patch("/:id/favorite", async (req, res) => {
 
     res.json(memory);
   } catch (error) {
+    console.error("Favorite toggle error:", error);
     res.status(500).json({ error: error.message });
   }
 });
